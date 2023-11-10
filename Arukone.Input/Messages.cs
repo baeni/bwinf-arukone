@@ -12,6 +12,7 @@
              `..       `..  `..   `..  `..`.. `..  `..  `..  `..  `..`.        
             `..         `..`...     `..`..`..  `..   `..    `...  `..  `....   
             
+
             Bestimme die Größe des Spielfeldes (>= {0}): 
             """;
 
@@ -25,8 +26,9 @@
              `..       `..  `..   `..  `..`.. `..  `..  `..  `..  `..`.        
             `..         `..`...     `..`..`..  `..   `..    `...  `..  `....   
             
-            {0} Spielfelder in der Größe {1}*{1} werden generiert...
-            Dieser Vorgang kann einen Augenblick dauern.
+
+            Es werden {0} Spielfelder in der Größe {1}*{1} generiert.
+            Dieser Vorgang kann einen Moment dauern.
 
             """;
 
@@ -40,10 +42,16 @@
              `..       `..  `..   `..  `..`.. `..  `..  `..  `..  `..`.        
             `..         `..`...     `..`..`..  `..   `..    `...  `..  `....   
             
-            Es wurden {0} Spielfelder mit einer Größe von {1}*{1} erstellt.
-            Die Ergebnisse und Logs kannst du unter "{2}" bzw. "{3}" einsehen.
 
-            | Der Vorgang hat {4}s gedauert.
+            {0} Spielfelder mit einer Größe von {1}*{1} wurden erstellt.
+            Der Vorgang wurde in {2}s abgeschlossen.
+
+            - Ergebnisse: {3}
+            - Logs:       {4}
+
+            Drücke eine beliebige Taste, um das Fenster zu schließen...
             """;
+
+        internal const string ErrorOpeningExplorer = "Beim Öffnen des Explorers ist ein Fehler aufgetreten.";
     }
 }
