@@ -14,7 +14,7 @@ namespace Arukone.Input
         private const string OutputFileName = "board{0}.txt";
 
         private const string LogsDirPath = "./logs";
-        private const string LogsFileName = "log-{0}.json";
+        private const string LogsFileName = "latest.log";
 
         private static ArukoneService _arukoneService = default!;
         private static ILogger<ArukoneService> _logger = default!;
@@ -115,7 +115,7 @@ namespace Arukone.Input
                 Directory.CreateDirectory(LogsDirPath);
             }
 
-            var logFile = Path.Combine(LogsDirPath, string.Format(LogsFileName, DateTime.UtcNow));
+            var logFile = Path.Combine(LogsDirPath, LogsFileName);
 
             var seriLog = new LoggerConfiguration()
                 .WriteTo.File(logFile)
