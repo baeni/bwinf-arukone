@@ -13,12 +13,12 @@
 
         public const int MinBoardSize = 4;
 
-        public const double MinNumbersMultiplier = .5;
-        public const double MaxNumbersMultiplier = 2;
+        internal const double MinNumbersMultiplier = .5;
+        internal const double MaxNumbersMultiplier = 2;
 
-        public const double MinMoveCountMultiplier = 1;
-        public const double MaxMoveCountMultiplier = 4;
+        internal const double MinMoveCountMultiplier = 1;
+        internal const double MaxMoveCountMultiplier = 4;
 
-        public const int BoardGenerationFailThreshold = 750;
+        internal const int BoardGenerationFailThreshold = 750;
     }
 }
