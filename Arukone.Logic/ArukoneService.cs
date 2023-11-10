@@ -39,7 +39,6 @@ namespace Arukone.Logic
                     if (board is null)
                     {
                         failedTries++;
-                        _logger?.LogInformation("No more possible moves left.");
                     }
                 }
             });
@@ -113,6 +112,7 @@ namespace Arukone.Logic
                 if (startPosition is null)
                 {
                     // This happens almost never
+                    _logger?.LogError("Board is already completely filled.");
                     return null;
                 }
 
@@ -122,9 +122,7 @@ namespace Arukone.Logic
                 filledBoardArr[y, x] = i;
                 boardArr[y, x] = i;
 
-                var moveCount = _rnd.Next(
-                    (int) Math.Ceiling(size * MagicNumbers.MinMoveCountMultiplier),
-                    (int) Math.Ceiling(size * MagicNumbers.MaxMoveCountMultiplier));
+                var moveCount = Math.Ceiling(size * MagicNumbers.MoveCountMultiplier);
 
                 for (int j = 1; j <= moveCount; j++)
                 {
@@ -138,6 +136,7 @@ namespace Arukone.Logic
                         if (!enumerator.MoveNext())
                         {
                             // TODO: This happens too often
+                            _logger?.LogError("No more possible moves.");
                             return null;
                         }
 
@@ -145,7 +144,7 @@ namespace Arukone.Logic
                         var upcommingX = x;
                         var upcommingY = y;
 
-                        _logger?.LogInformation($"Checking if {i} can move {potentialMove} in {j}th step..");
+                        _logger?.LogDebug($"Checking if {i} can move {potentialMove} in {j}th step..");
 
                         switch (potentialMove)
                         {
@@ -165,7 +164,7 @@ namespace Arukone.Logic
 
                         if (upcommingX >= 0 && upcommingX < size && upcommingY >= 0 && upcommingY < size && filledBoardArr[upcommingY, upcommingX] is 0)
                         {
-                            _logger?.LogInformation($"{i} can indeed move {potentialMove} in {j}th step.");
+                            _logger?.LogInformation($"{i} moves {potentialMove} in {j}th step.");
 
                             filledBoardArr[upcommingY, upcommingX] = i;
                             x = upcommingX;
