@@ -16,8 +16,7 @@
         internal const double MinNumbersMultiplier = .5;
         internal const double MaxNumbersMultiplier = 2;
 
-        internal const double MinMoveCountMultiplier = 1;
-        internal const double MaxMoveCountMultiplier = 4;
+        internal const double MoveCountMultiplier = 1;
 
         internal const int BoardGenerationFailThreshold = 750;
     }
