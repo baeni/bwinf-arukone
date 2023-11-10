@@ -1,16 +1,23 @@
 ﻿using Arukone.Logic.Enums;
-using Arukone.Logic.Exceptions;
 using Arukone.Logic.Models;
+using Microsoft.Extensions.Logging;
 using System.Text;
 
 namespace Arukone.Logic
 {
-    public static class ArukoneHelper
+    public class ArukoneService
     {
-        private static readonly ArukoneMove[] _arukoneMoveEnums = (ArukoneMove[]) Enum.GetValues(typeof(ArukoneMove));
-        private static readonly Random _rnd = new();
+        private readonly ArukoneMove[] _arukoneMoveEnums = (ArukoneMove[]) Enum.GetValues(typeof(ArukoneMove));
+        private readonly Random _rnd = new();
 
-        public static async Task<ArukoneBoard> GenerateBoardAsync(ArukoneBoardDefinition definition)
+        private readonly ILogger<ArukoneService>? _logger;
+
+        public ArukoneService(ILogger<ArukoneService>? logger = null)
+        {
+            _logger = logger;
+        }
+
+        public async Task<ArukoneBoard> GenerateBoardAsync(ArukoneBoardDefinition definition)
         {
             ArukoneBoard? board = null;
 
@@ -26,14 +33,13 @@ namespace Arukone.Logic
                         failedTries = 0;
                     }
 
-                    try
-                    {
-                        board = TryGenerateRandomBoard(definition);
-                    }
-                    catch (Exception ex) when (ex is IndexOutOfRangeException || ex is BoardFilledException)
+                    // TODO: This is taking ages...
+                    board = TryGenerateRandomBoard(definition);
+
+                    if (board is null)
                     {
                         failedTries++;
-                        //Console.WriteLine(ex.Message);
+                        _logger?.LogInformation("No more possible moves left.");
                     }
                 }
             });
@@ -41,23 +47,25 @@ namespace Arukone.Logic
             return board!;
         }
 
-        public static async Task<ArukoneBoard[]> GenerateManyBoardsAsync(params ArukoneBoardDefinition[] definitions)
+        public async Task<ArukoneBoard[]> GenerateManyBoardsAsync(params ArukoneBoardDefinition[] definitions)
         {
             var definitionsCount = definitions.Length;
             var boards = new List<ArukoneBoard>();
 
             for (int i = 0; i < definitionsCount; i++)
             {
+                Console.Write($"Spielfeld {i + 1} von {definitionsCount} wird generiert...");
+
                 var board = await GenerateBoardAsync(definitions[i]);
                 boards.Add(board);
 
-                Console.WriteLine($"{i + 1} von {definitionsCount} Spielfelder generiert.");
+                Console.WriteLine();
             }
 
             return boards.ToArray();
         }
 
-        public static string SerializeBoard(ArukoneBoard board)
+        public string SerializeBoard(ArukoneBoard board)
         {
             var builder = new StringBuilder();
 
@@ -89,7 +97,7 @@ namespace Arukone.Logic
             return builder.ToString();
         }
 
-        private static ArukoneBoard TryGenerateRandomBoard(ArukoneBoardDefinition definition)
+        private ArukoneBoard? TryGenerateRandomBoard(ArukoneBoardDefinition definition)
         {
             var size = definition.Size;
             var numbersCount = definition.NumbersCount;
@@ -99,9 +107,15 @@ namespace Arukone.Logic
 
             for (int i = 1; i <= numbersCount; i++)
             {
-                //Console.WriteLine("Started new path.");
+                _logger?.LogInformation($"Path for {i} has been started.");
 
-                Tuple<int, int> startPosition = TryGetValidStartPosition(definition, filledBoardArr);
+                Tuple<int, int>? startPosition = TryGetValidStartPosition(definition, filledBoardArr);
+                if (startPosition is null)
+                {
+                    // This happens almost never
+                    return null;
+                }
+
                 var x = startPosition.Item1;
                 var y = startPosition.Item2;
 
@@ -123,14 +137,15 @@ namespace Arukone.Logic
                     {
                         if (!enumerator.MoveNext())
                         {
-                            throw new IndexOutOfRangeException("No potential moves left.");
+                            // TODO: This happens too often
+                            return null;
                         }
 
                         var potentialMove = enumerator.Current;
                         var upcommingX = x;
                         var upcommingY = y;
 
-                        //Console.WriteLine($"Checking if {i} can move {potentialMove} in {j}th step..");
+                        _logger?.LogInformation($"Checking if {i} can move {potentialMove} in {j}th step..");
 
                         switch (potentialMove)
                         {
@@ -150,7 +165,7 @@ namespace Arukone.Logic
 
                         if (upcommingX >= 0 && upcommingX < size && upcommingY >= 0 && upcommingY < size && filledBoardArr[upcommingY, upcommingX] is 0)
                         {
-                            //Console.WriteLine($"{i} can indeed move {potentialMove} in {j}th step.");
+                            _logger?.LogInformation($"{i} can indeed move {potentialMove} in {j}th step.");
 
                             filledBoardArr[upcommingY, upcommingX] = i;
                             x = upcommingX;
@@ -167,19 +182,19 @@ namespace Arukone.Logic
                     while (!moveSuccessful);
                 }
 
-                //Console.WriteLine("Path for number done.");
+                _logger?.LogInformation($"Path for {i} has been finished.");
             }
 
-            //Console.WriteLine("Board generation done.");
+            _logger?.LogInformation("Board has been generated.");
 
             return new ArukoneBoard(definition, boardArr);
         }
 
-        private static Tuple<int, int> TryGetValidStartPosition(ArukoneBoardDefinition definition, int[,] filledBoardArr)
+        private Tuple<int, int>? TryGetValidStartPosition(ArukoneBoardDefinition definition, int[,] filledBoardArr)
         {
-            if (!filledBoardArr.Cast<int>().Any(x => x == 0))
+            if (!filledBoardArr.Cast<int>().Any(x => x is 0))
             {
-                throw new BoardFilledException();
+                return null;
             }
 
             var size = definition.Size;
@@ -189,7 +204,7 @@ namespace Arukone.Logic
 
             do
             {
-                //Console.WriteLine("Evaluating start position.");
+                _logger?.LogInformation("Evaluation a start position.");
 
                 x = _rnd.Next(size);
                 y = _rnd.Next(size);
@@ -199,7 +214,7 @@ namespace Arukone.Logic
             return new Tuple<int, int>(x, y);
         }
 
-        private static bool IsBoardValid(ArukoneBoard? board)
+        private bool IsBoardValid(ArukoneBoard? board)
         {
             if (board is null)
             {
