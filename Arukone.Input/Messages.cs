@@ -44,7 +44,7 @@
             
 
             {0} Spielfelder mit einer Größe von {1}*{1} wurden erstellt.
-            Der Vorgang wurde in {2}s abgeschlossen.
+            Der Vorgang wurde nach {2}s abgeschlossen.
 
             - Ergebnisse: {3}
             - Logs:       {4}
