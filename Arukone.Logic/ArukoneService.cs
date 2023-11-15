@@ -49,17 +49,19 @@ namespace Arukone.Logic
         public async Task<ArukoneBoard[]> GenerateManyBoardsAsync(params ArukoneBoardDefinition[] definitions)
         {
             var definitionsCount = definitions.Length;
-            var boards = new List<ArukoneBoard>();
+            var boardsToGenerate = new List<Task<ArukoneBoard>>();
 
             for (int i = 0; i < definitionsCount; i++)
             {
                 Console.Write($"Spielfeld {i + 1} von {definitionsCount} wird generiert...");
 
-                var board = await GenerateBoardAsync(definitions[i]);
-                boards.Add(board);
+                var board = GenerateBoardAsync(definitions[i]);
+                boardsToGenerate.Add(board);
 
                 Console.WriteLine();
             }
+
+            var boards = await Task.WhenAll(boardsToGenerate);
 
             return boards.ToArray();
         }
@@ -111,7 +113,6 @@ namespace Arukone.Logic
                 Tuple<int, int>? startPosition = TryGetValidStartPosition(definition, filledBoardArr);
                 if (startPosition is null)
                 {
-                    // This happens almost never
                     _logger?.LogError("Board is already completely filled.");
                     return null;
                 }
@@ -213,13 +214,8 @@ namespace Arukone.Logic
             return new Tuple<int, int>(x, y);
         }
 
-        private bool IsBoardValid(ArukoneBoard? board)
+        private bool IsBoardValid(ArukoneBoard board)
         {
-            if (board is null)
-            {
-                return false;
-            }
-
             var numbers = board.BoardArr.Cast<int>();
             for (int i = 1; i <= board.Definition.NumbersCount; i++)
             {
