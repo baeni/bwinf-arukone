@@ -104,7 +104,7 @@ namespace Arukone.Input
             }
             catch (Exception)
             {
-                Console.WriteLine(Messages.ErrorOpeningExplorer);
+                _logger.LogError(Messages.ErrorOpeningExplorer);
             }
         }
 
