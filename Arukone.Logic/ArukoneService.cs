@@ -33,7 +33,6 @@ namespace Arukone.Logic
                         failedTries = 0;
                     }
 
-                    // TODO: This is taking ages...
                     board = TryGenerateRandomBoard(definition);
 
                     if (board is null)
@@ -53,49 +52,13 @@ namespace Arukone.Logic
 
             for (int i = 0; i < definitionsCount; i++)
             {
-                Console.Write($"Spielfeld {i + 1} von {definitionsCount} wird generiert...");
-
                 var board = GenerateBoardAsync(definitions[i]);
                 boardsToGenerate.Add(board);
-
-                Console.WriteLine();
             }
 
             var boards = await Task.WhenAll(boardsToGenerate);
 
             return boards.ToArray();
-        }
-
-        public string SerializeBoard(ArukoneBoard board)
-        {
-            var builder = new StringBuilder();
-
-            var size = board.Definition.Size;
-            var numbersCount = board.Definition.NumbersCount;
-
-            builder.AppendLine(size.ToString());
-            builder.AppendLine(numbersCount.ToString());
-
-            for (var y = 0; y < size; y++)
-            {
-                for (var x = 0; x < size; x++)
-                {
-                    var number = board.BoardArr[y, x];
-                    builder.Append(number);
-
-                    if (x != size - 1)
-                    {
-                        builder.Append(' ');
-                    }
-                }
-
-                if (y != size - 1)
-                {
-                    builder.AppendLine();
-                }
-            }
-
-            return builder.ToString();
         }
 
         private ArukoneBoard? TryGenerateRandomBoard(ArukoneBoardDefinition definition)
@@ -108,8 +71,6 @@ namespace Arukone.Logic
 
             for (int i = 1; i <= numbersCount; i++)
             {
-                _logger?.LogInformation($"Path for {i} has been started.");
-
                 Tuple<int, int>? startPosition = TryGetValidStartPosition(definition, filledBoardArr);
                 if (startPosition is null)
                 {
@@ -181,11 +142,7 @@ namespace Arukone.Logic
                     }
                     while (!moveSuccessful);
                 }
-
-                _logger?.LogInformation($"Path for {i} has been finished.");
             }
-
-            _logger?.LogInformation("Board has been generated.");
 
             return new ArukoneBoard(definition, boardArr);
         }
@@ -228,6 +185,38 @@ namespace Arukone.Logic
             }
 
             return true;
+        }
+
+        public string SerializeBoard(ArukoneBoard board)
+        {
+            var builder = new StringBuilder();
+
+            var size = board.Definition.Size;
+            var numbersCount = board.Definition.NumbersCount;
+
+            builder.AppendLine(size.ToString());
+            builder.AppendLine(numbersCount.ToString());
+
+            for (var y = 0; y < size; y++)
+            {
+                for (var x = 0; x < size; x++)
+                {
+                    var number = board.BoardArr[y, x];
+                    builder.Append(number);
+
+                    if (x != size - 1)
+                    {
+                        builder.Append(' ');
+                    }
+                }
+
+                if (y != size - 1)
+                {
+                    builder.AppendLine();
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }
